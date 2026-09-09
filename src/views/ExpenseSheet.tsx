@@ -17,7 +17,7 @@ interface ExpenseSheetProps {
   vacation: Vacation;
   expense?: Expense;
   onClose: () => void;
-  onSave: (draft: ExpenseDraft) => void;
+  onSave: (draft: ExpenseDraft) => void | Promise<void>;
   onDelete?: () => void;
 }
 
@@ -46,7 +46,7 @@ export default function ExpenseSheet({
 
   function submit() {
     if (!canSave || amountMinor === undefined) return;
-    onSave({
+    return onSave({
       name: name.trim(),
       category,
       amountMinor,
@@ -72,7 +72,6 @@ export default function ExpenseSheet({
             onChange={(e) => setAmount(e.target.value.replace(/[^\d.,]/g, ""))}
             inputMode="decimal"
             placeholder="0"
-            autoFocus
             aria-label="Amount"
             enterKeyHint="done"
           />
@@ -80,7 +79,10 @@ export default function ExpenseSheet({
         <div className="amount-hint">{eurHint}</div>
       </div>
 
-      <div className="chip-grid">
+      <div className="list-header" id="expense-category-label">
+        Category
+      </div>
+      <div className="chip-grid" role="group" aria-labelledby="expense-category-label">
         {CATEGORIES.map((option) => (
           <button
             key={option.id}

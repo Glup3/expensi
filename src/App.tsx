@@ -6,7 +6,9 @@ import VacationDetailView from "./views/VacationDetailView.tsx";
 import "./App.css";
 
 export default function App() {
-  const [openVacationId, setOpenVacationId] = useState<string | null>(null);
+  const [openVacationId, setOpenVacationId] = useState<string | null>(
+    () => window.history.state?.vacationId ?? null,
+  );
 
   // Make the iOS/Android back gesture pop the detail view instead of leaving the app.
   useEffect(() => {
@@ -17,6 +19,10 @@ export default function App() {
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
   }, []);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [openVacationId]);
 
   function open(vacationId: string) {
     setOpenVacationId(vacationId);
@@ -31,11 +37,10 @@ export default function App() {
   return (
     <ToastProvider>
       <div className="app">
-        <VacationsView onOpen={open} />
-        {openVacationId && (
-          <div className="screen--pushed" key={openVacationId}>
-            <VacationDetailView vacationId={openVacationId} onBack={back} />
-          </div>
+        {openVacationId ? (
+          <VacationDetailView key={openVacationId} vacationId={openVacationId} onBack={back} />
+        ) : (
+          <VacationsView onOpen={open} />
         )}
       </div>
       <PWABadge />

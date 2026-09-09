@@ -10,13 +10,12 @@ export default function SegmentedControl<T extends string>({
   onChange,
 }: SegmentedControlProps<T>) {
   return (
-    <div className="segmented" role="tablist">
+    <div className="segmented" role="group" aria-label="Vacation view">
       {options.map((option) => (
         <button
           key={option.value}
           type="button"
-          role="tab"
-          aria-selected={option.value === value}
+          aria-pressed={option.value === value}
           className={`segmented-item${option.value === value ? " segmented-item--active" : ""}`}
           onClick={() => onChange(option.value)}
         >

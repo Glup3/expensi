@@ -32,7 +32,7 @@ function PWABadge() {
       {needRefresh && (
         <div className="PWABadge-toast">
           <div className="PWABadge-message">
-            <span id="toast-message">New content available, click on reload button to update.</span>
+            <span id="toast-message">An update is ready. Reload when you’ve finished editing.</span>
           </div>
           <div className="PWABadge-buttons">
             <button className="PWABadge-toast-button" onClick={() => updateServiceWorker(true)}>

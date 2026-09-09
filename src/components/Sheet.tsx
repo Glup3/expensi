@@ -1,16 +1,16 @@
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 
 interface SheetProps {
   title: string;
   onClose: () => void;
   children: ReactNode;
-  /** Right-hand confirm action (e.g. Save). */
   confirmLabel?: string;
-  onConfirm?: () => void;
+  onConfirm?: () => void | Promise<void>;
   confirmDisabled?: boolean;
   cancelLabel?: string;
 }
 
+/** Native modal: focus trapping, Escape support, and no background interactions. */
 export default function Sheet({
   title,
   onClose,
@@ -20,48 +20,93 @@ export default function Sheet({
   confirmDisabled,
   cancelLabel = "Cancel",
 }: SheetProps) {
+  const dialog = useRef<HTMLDialogElement>(null);
+  const titleId = useId();
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const submitting = useRef(false);
+
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+    const element = dialog.current!;
+    const scrollY = window.scrollY;
+    const previous = {
+      position: document.body.style.position,
+      top: document.body.style.top,
+      width: document.body.style.width,
     };
-    document.addEventListener("keydown", onKey);
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    // Lock background scrolling on iOS as well as desktop browsers.
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = "100%";
+    element.showModal();
+    // The software keyboard can shrink the visual viewport without changing dvh.
+    const viewport = window.visualViewport;
+    const syncViewport = () => {
+      element.style.setProperty("--dialog-height", `${viewport?.height ?? window.innerHeight}px`);
+      element.style.setProperty("--dialog-top", `${viewport?.offsetTop ?? 0}px`);
+    };
+    syncViewport();
+    viewport?.addEventListener("resize", syncViewport);
+    viewport?.addEventListener("scroll", syncViewport);
     return () => {
-      document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = previous;
+      viewport?.removeEventListener("resize", syncViewport);
+      viewport?.removeEventListener("scroll", syncViewport);
+      element.close();
+      Object.assign(document.body.style, previous);
+      window.scrollTo(0, scrollY);
     };
-  }, [onClose]);
+  }, []);
 
   return (
-    <div className="sheet-backdrop" onClick={onClose} role="presentation">
-      <div
-        className="sheet"
-        role="dialog"
-        aria-modal="true"
-        aria-label={title}
-        onClick={(e) => e.stopPropagation()}
+    <dialog
+      ref={dialog}
+      className="sheet"
+      aria-labelledby={titleId}
+      onCancel={(event) => {
+        event.preventDefault();
+        if (!submitting.current) onClose();
+      }}
+    >
+      <form
+        className="sheet-form"
+        onSubmit={async (event) => {
+          event.preventDefault();
+          if (!onConfirm || confirmDisabled || submitting.current) return;
+          submitting.current = true;
+          setSaving(true);
+          setError("");
+          try {
+            await onConfirm();
+          } catch {
+            setError("Could not save your changes. Please try again.");
+          } finally {
+            submitting.current = false;
+            setSaving(false);
+          }
+        }}
       >
-        <div className="sheet-nav">
-          <button type="button" className="navbar-action" onClick={onClose}>
-            {cancelLabel}
-          </button>
-          <div className="navbar-title">{title}</div>
-          {confirmLabel ? (
-            <button
-              type="button"
-              className="navbar-action navbar-action--right navbar-action--strong"
-              onClick={onConfirm}
-              disabled={confirmDisabled}
-            >
-              {confirmLabel}
-            </button>
-          ) : (
-            <div className="navbar-action navbar-action--right" />
+        <header className="sheet-nav">
+          <h2 id={titleId}>{title}</h2>
+        </header>
+        <div className="sheet-body">
+          {children}
+          {error && (
+            <p className="error-text" role="alert">
+              {error}
+            </p>
           )}
         </div>
-        <div className="sheet-body">{children}</div>
-      </div>
-    </div>
+        <footer className="sheet-footer">
+          <button type="button" className="btn btn--secondary" onClick={onClose} disabled={saving}>
+            {cancelLabel}
+          </button>
+          {confirmLabel && (
+            <button type="submit" className="btn" disabled={confirmDisabled || saving}>
+              {saving ? "Saving…" : confirmLabel}
+            </button>
+          )}
+        </footer>
+      </form>
+    </dialog>
   );
 }

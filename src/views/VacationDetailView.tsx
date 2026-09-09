@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import SegmentedControl from "../components/SegmentedControl.tsx";
-import SwipeRow from "../components/SwipeRow.tsx";
 import { useToast } from "../components/toast-context.ts";
 import { categoryInfo } from "../lib/categories.ts";
 import { formatEur, formatMoney } from "../lib/money.ts";
@@ -38,10 +37,27 @@ export default function VacationDetailView({ vacationId, onBack }: VacationDetai
   const [showVacationEdit, setShowVacationEdit] = useState(false);
   const [showData, setShowData] = useState(false);
 
-  const vacation = useLiveQuery(() => getVacation(vacationId), [vacationId], undefined);
+  const vacation = useLiveQuery(
+    async () => (await getVacation(vacationId)) ?? null,
+    [vacationId],
+    undefined,
+  );
   const expenses = useLiveQuery(() => listExpenses(vacationId), [vacationId], undefined);
 
-  if (!vacation) return <div className="screen" />;
+  if (!vacation) {
+    return (
+      <div className="screen">
+        <div className="navbar">
+          <button type="button" className="navbar-action" onClick={onBack}>
+            ← Vacations
+          </button>
+        </div>
+        <p role="status">
+          {vacation === undefined ? "Loading vacation…" : "This vacation no longer exists."}
+        </p>
+      </div>
+    );
+  }
 
   const summary = summarize(expenses ?? [], vacation);
   const groups = groupByDate(expenses ?? []);
@@ -89,7 +105,9 @@ export default function VacationDetailView({ vacationId, onBack }: VacationDetai
             <div className="empty">
               <div className="empty-glyph">🧾</div>
               <div className="empty-title">No expenses yet</div>
-              <p className="empty-text">Tap + to log what you just spent. It takes seconds.</p>
+              <p className="empty-text">
+                Add your first expense below. Tap any expense to edit or delete it.
+              </p>
             </div>
           ) : (
             groups.map((group) => (
@@ -99,29 +117,28 @@ export default function VacationDetailView({ vacationId, onBack }: VacationDetai
                   {group.items.map((expense) => {
                     const info = categoryInfo(expense.category);
                     return (
-                      <SwipeRow key={expense.id} onDelete={() => void removeExpense(expense)}>
-                        <button
-                          type="button"
-                          className="row row--tappable"
-                          onClick={() => setEditing(expense)}
-                        >
-                          <span className="row-glyph" style={{ background: info.tint }}>
-                            {info.glyph}
+                      <button
+                        key={expense.id}
+                        type="button"
+                        className="row row--tappable"
+                        onClick={() => setEditing(expense)}
+                      >
+                        <span className="row-glyph" style={{ background: info.tint }}>
+                          {info.glyph}
+                        </span>
+                        <span className="row-main">
+                          <span className="row-title">{expense.name}</span>
+                          <span className="row-subtitle">
+                            {info.label}
+                            {expense.notes ? ` · ${expense.notes}` : ""}
                           </span>
-                          <span className="row-main">
-                            <span className="row-title">{expense.name}</span>
-                            <span className="row-subtitle">
-                              {info.label}
-                              {expense.notes ? ` · ${expense.notes}` : ""}
-                            </span>
+                        </span>
+                        <span className="row-trailing">
+                          <span className="row-amount">
+                            {formatMoney(expense.amountMinor, vacation.currency)}
                           </span>
-                          <span className="row-trailing">
-                            <span className="row-amount">
-                              {formatMoney(expense.amountMinor, vacation.currency)}
-                            </span>
-                          </span>
-                        </button>
-                      </SwipeRow>
+                        </span>
+                      </button>
                     );
                   })}
                 </div>
@@ -205,11 +222,11 @@ export default function VacationDetailView({ vacationId, onBack }: VacationDetai
 
       <button
         type="button"
-        className="fab"
+        className="add-button"
         onClick={() => setShowNew(true)}
         aria-label="New expense"
       >
-        +
+        <span aria-hidden="true">+</span> Add expense
       </button>
 
       {showNew && (
@@ -219,6 +236,8 @@ export default function VacationDetailView({ vacationId, onBack }: VacationDetai
           onSave={async (draft) => {
             await createExpense({ ...draft, vacationId });
             setShowNew(false);
+            setTab("expenses");
+            toast.show("Expense added");
           }}
         />
       )}
@@ -249,6 +268,12 @@ export default function VacationDetailView({ vacationId, onBack }: VacationDetai
             setShowVacationEdit(false);
           }}
           onDelete={async () => {
+            if (
+              !window.confirm(
+                `Delete “${vacation.name}” and all its expenses? This cannot be undone.`,
+              )
+            )
+              return;
             await deleteVacation(vacation.id);
             setShowVacationEdit(false);
             onBack();

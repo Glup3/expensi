@@ -34,7 +34,7 @@ export default function VacationsView({ onOpen }: VacationsViewProps) {
     <div className="screen">
       <div className="navbar">
         <div className="navbar-action" />
-        <div className="navbar-title" />
+        <div className="navbar-title">Expense tracker</div>
         <button
           type="button"
           className="navbar-action navbar-action--right"
@@ -53,7 +53,7 @@ export default function VacationsView({ onOpen }: VacationsViewProps) {
           <div className="empty">
             <div className="empty-glyph">🧳</div>
             <div className="empty-title">No vacations yet</div>
-            <p className="empty-text">Tap + to add your first trip, then start logging expenses.</p>
+            <p className="empty-text">Create a vacation to keep its expenses in one place.</p>
           </div>
         ) : (
           <div className="list">
@@ -95,11 +95,11 @@ export default function VacationsView({ onOpen }: VacationsViewProps) {
 
       <button
         type="button"
-        className="fab"
+        className="add-button"
         onClick={() => setShowNew(true)}
         aria-label="New vacation"
       >
-        +
+        <span aria-hidden="true">+</span> New vacation
       </button>
 
       {showNew && (

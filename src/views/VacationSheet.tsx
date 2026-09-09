@@ -6,7 +6,7 @@ import type { Vacation } from "../db/db.ts";
 interface VacationSheetProps {
   vacation?: Vacation;
   onClose: () => void;
-  onSave: (input: { name: string; currency: string; rateToEur: number }) => void;
+  onSave: (input: { name: string; currency: string; rateToEur: number }) => void | Promise<void>;
   onDelete?: () => void;
 }
 
@@ -35,7 +35,7 @@ export default function VacationSheet({ vacation, onClose, onSave, onDelete }: V
 
   function submit() {
     if (!canSave) return;
-    onSave({
+    return onSave({
       name: name.trim(),
       currency,
       rateToEur: isEur ? 1 : rateValue,
@@ -58,7 +58,6 @@ export default function VacationSheet({ vacation, onClose, onSave, onDelete }: V
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Japan 2025"
-            autoFocus={!vacation}
             enterKeyHint="done"
             autoCapitalize="words"
           />
