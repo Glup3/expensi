@@ -8,7 +8,7 @@ import {
 import { useLiveQuery } from "dexie-react-hooks";
 import SegmentedControl from "../components/SegmentedControl.tsx";
 import { categoryInfo } from "../lib/categories.ts";
-import { formatEur, formatMoney } from "../lib/money.ts";
+import { formatEur, formatMoney, toEurMinor } from "../lib/money.ts";
 import { formatDateHeading } from "../lib/date.ts";
 import { getVacation, groupByDate, listExpenses, summarize } from "../db/repo.ts";
 import type { detailLoader } from "../lib/loaders.ts";
@@ -173,8 +173,22 @@ export default function VacationDetailView() {
                                 {entry.count} item{entry.count === 1 ? "" : "s"}
                               </span>
                             </span>
-                            <span className="row-amount">
-                              {formatMoney(entry.totalMinor, vacation.currency)}
+                            <span>
+                              <span className="row-amount">
+                                {formatMoney(entry.totalMinor, vacation.currency)}
+                              </span>
+                              {vacation.currency !== "EUR" && (
+                                <span className="row-subtitle" style={{ textAlign: "right" }}>
+                                  ≈{" "}
+                                  {formatEur(
+                                    toEurMinor(
+                                      entry.totalMinor,
+                                      vacation.currency,
+                                      vacation.rateToEur,
+                                    ),
+                                  )}
+                                </span>
+                              )}
                             </span>
                             <span className="cat-share">{Math.round(entry.share * 100)}%</span>
                           </div>

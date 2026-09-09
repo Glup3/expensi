@@ -79,6 +79,27 @@ test("page routes create, reload, edit and confirm deletion", async ({ page }) =
   await expect(page.getByRole("heading", { name: "Portugal updated", exact: true })).toBeVisible();
 });
 
+test("summary shows category EUR equivalents only for foreign currencies", async ({ page }) => {
+  await createVacation(page);
+  await addExpense(page);
+  await page.getByRole("button", { name: "Summary", exact: true }).click();
+  await expect(page.locator(".cat-row").filter({ hasText: "Food" })).not.toContainText("≈");
+
+  await page.goto("/vacations/new");
+  await page.getByLabel("Name", { exact: true }).fill("Japan");
+  await page.getByRole("combobox").selectOption("JPY");
+  await page.getByLabel("Rate", { exact: true }).fill("0.0061");
+  await page.getByRole("button", { name: "Save", exact: true }).click();
+  await page.getByRole("button", { name: "New expense", exact: true }).click();
+  await page.getByLabel("Amount", { exact: true }).fill("1000");
+  await page.getByLabel("Name", { exact: true }).fill("Ramen");
+  await page.getByRole("button", { name: "Save", exact: true }).click();
+  await page.getByRole("button", { name: "Summary", exact: true }).click();
+  const category = page.locator(".cat-row").filter({ hasText: "Food" });
+  await expect(category.locator(".row-amount")).toContainText("1,000");
+  await expect(category).toContainText("≈ €6.10");
+});
+
 test("back/forward, direct-link cancel, and missing-record recovery", async ({ page }) => {
   const base = await createVacation(page);
   await page.getByRole("button", { name: "Summary", exact: true }).click();
