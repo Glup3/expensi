@@ -1,0 +1,42 @@
+vacation,currency,rateToEur,name,category,amount,date,notes
+Austria 2025,EUR,1,Flight Vienna return,flights,148.90,2025-03-14,
+Austria 2025,EUR,1,Hotel Altstadt (3 nights),hotels,321.00,2025-03-14,Breakfast included
+Austria 2025,EUR,1,Vienna City Card,transport,17.00,2025-03-14,48h
+Austria 2025,EUR,1,Wiener Schnitzel,food,24.50,2025-03-14,Figlmüller
+Austria 2025,EUR,1,Sachertorte and coffee,food,12.80,2025-03-15,
+Austria 2025,EUR,1,Schönbrunn Palace ticket,fun,26.00,2025-03-15,Grand tour
+Austria 2025,EUR,1,Naschmarkt lunch,food,18.20,2025-03-15,
+Austria 2025,EUR,1,Tram tickets,transport,4.80,2025-03-15,
+Austria 2025,EUR,1,Belvedere museum,fun,17.50,2025-03-16,"Klimt, worth it"
+Austria 2025,EUR,1,Souvenir mug,shopping,9.90,2025-03-16,
+Austria 2025,EUR,1,Dinner Zum Schwarzen Kameel,food,62.00,2025-03-16,
+Austria 2025,EUR,1,Airport train CAT,transport,14.90,2025-03-17,
+Japan 2025,JPY,0.0061,Flight Vienna-Tokyo,flights,86500,2025-04-05,"Return, via Helsinki"
+Japan 2025,JPY,0.0061,Hotel Shinjuku (5 nights),hotels,78000,2025-04-06,
+Japan 2025,JPY,0.0061,Suica card top-up,transport,5000,2025-04-06,
+Japan 2025,JPY,0.0061,Ramen Ichiran,food,1290,2025-04-06,
+Japan 2025,JPY,0.0061,Convenience store breakfast,food,680,2025-04-07,7-Eleven
+Japan 2025,JPY,0.0061,teamLab Planets,fun,3800,2025-04-07,
+Japan 2025,JPY,0.0061,Sushi Dai Toyosu,food,4500,2025-04-08,Queued 90 min
+Japan 2025,JPY,0.0061,Shinkansen to Kyoto,transport,13320,2025-04-09,
+Japan 2025,JPY,0.0061,Ryokan Gion (2 nights),hotels,46000,2025-04-09,Tatami room
+Japan 2025,JPY,0.0061,Fushimi Inari snacks,food,1100,2025-04-10,
+Japan 2025,JPY,0.0061,Kimono rental,fun,6500,2025-04-10,
+Japan 2025,JPY,0.0061,Uniqlo shopping,shopping,8900,2025-04-11,
+Japan 2025,JPY,0.0061,Don Quijote souvenirs,shopping,4200,2025-04-11,Snacks and gifts
+Japan 2025,JPY,0.0061,Izakaya dinner,food,5600,2025-04-11,
+Japan 2025,JPY,0.0061,Narita Express,transport,3070,2025-04-12,
+Japan 2025,JPY,0.0061,Pocket wifi rental,other,4500,2025-04-12,
+Denmark 2025,DKK,0.134,Flight Vienna-Copenhagen,flights,1290.00,2025-06-20,
+Denmark 2025,DKK,0.134,Hotel Nyhavn (4 nights),hotels,6480.00,2025-06-20,
+Denmark 2025,DKK,0.134,Copenhagen Card,transport,449.00,2025-06-20,72h
+Denmark 2025,DKK,0.134,Smørrebrød lunch,food,185.00,2025-06-21,
+Denmark 2025,DKK,0.134,Tivoli Gardens entry,fun,155.00,2025-06-21,
+Denmark 2025,DKK,0.134,Bike rental,transport,120.00,2025-06-21,Full day
+Denmark 2025,DKK,0.134,Coffee and pastry,food,98.50,2025-06-22,
+Denmark 2025,DKK,0.134,Louisiana Museum,fun,145.00,2025-06-22,
+Denmark 2025,DKK,0.134,Dinner Reffen street food,food,240.00,2025-06-22,
+Denmark 2025,DKK,0.134,Design shop print,shopping,320.00,2025-06-23,
+Denmark 2025,DKK,0.134,Canal tour,fun,110.00,2025-06-23,
+Denmark 2025,DKK,0.134,Groceries Netto,food,164.20,2025-06-23,
+Denmark 2025,DKK,0.134,Airport metro,transport,36.00,2025-06-24,
