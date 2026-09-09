@@ -135,6 +135,44 @@
   background: var(--fill-tertiary);
 }
 
+/* Detail navigation sticks without introducing a second scroll container.
+   The title between the navigation and tabs scrolls away naturally. */
+.screen.detail-screen {
+  --detail-nav-height: calc(64px + var(--safe-top));
+  padding-inline: 0;
+  scroll-margin-top: calc(var(--detail-nav-height) + 76px);
+}
+.detail-screen .detail-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 12;
+  min-height: var(--detail-nav-height);
+  margin-top: calc(-1 * var(--safe-top));
+  margin-bottom: 20px;
+  padding: calc(8px + var(--safe-top)) 20px 8px;
+  justify-content: space-between;
+  border: 0;
+  background: var(--bg);
+}
+.detail-screen > .large-title-wrap,
+.detail-screen > .screen-body {
+  padding-inline: 20px;
+}
+.detail-tabs {
+  position: sticky;
+  top: var(--detail-nav-height);
+  z-index: 11;
+  padding: 8px 20px 16px;
+  background: var(--bg);
+}
+.detail-tabs .segmented {
+  margin: 0;
+}
+.detail-screen .screen-body .row {
+  scroll-margin-top: calc(var(--detail-nav-height) + 80px);
+  scroll-margin-bottom: calc(100px + var(--safe-bottom));
+}
+
 /* A labeled action stays in thumb reach, aligned with the content on desktop. */
 .add-button {
   position: fixed;
@@ -392,6 +430,16 @@ h1:focus {
   }
 }
 @media (max-width: 600px) {
+  .detail-screen .detail-navbar,
+  .detail-screen > .large-title-wrap,
+  .detail-screen > .screen-body,
+  .detail-tabs {
+    padding-inline: 16px;
+  }
+  .add-button--expense {
+    left: calc(16px + var(--safe-left));
+    right: calc(16px + var(--safe-right));
+  }
   .screen {
     padding-inline: 16px;
   }

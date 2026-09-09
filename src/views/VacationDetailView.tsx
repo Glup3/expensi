@@ -51,12 +51,11 @@ export default function VacationDetailView() {
   const groups = groupByDate(expenses ?? []);
 
   return (
-    <div className="screen">
-      <div className="navbar">
+    <div className="screen detail-screen">
+      <nav className="navbar detail-navbar" aria-label="Vacation navigation">
         <button type="button" className="navbar-action" onClick={onBack}>
           <span aria-hidden="true">‹</span> Vacations
         </button>
-        <div className="navbar-title">{vacation.name}</div>
         <button
           type="button"
           className="navbar-action navbar-action--right"
@@ -64,13 +63,13 @@ export default function VacationDetailView() {
         >
           Edit
         </button>
-      </div>
+      </nav>
 
       <div className="large-title-wrap">
         <h1 className="large-title">{vacation.name}</h1>
       </div>
 
-      <div className="screen-body">
+      <div className="detail-tabs">
         <SegmentedControl
           value={tab}
           onChange={(value) =>
@@ -85,7 +84,9 @@ export default function VacationDetailView() {
             { value: "summary", label: "Summary" },
           ]}
         />
+      </div>
 
+      <div className="screen-body">
         {tab === "expenses" ? (
           expenses === undefined ? null : expenses.length === 0 ? (
             <div className="empty">
@@ -224,7 +225,7 @@ export default function VacationDetailView() {
 
       <button
         type="button"
-        className="add-button"
+        className="add-button add-button--expense"
         onClick={() =>
           navigate(`${base}/expenses/new`, {
             state: { ...navigationState.state, vacation },

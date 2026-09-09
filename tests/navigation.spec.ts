@@ -228,6 +228,60 @@ test("an expense cannot be edited under another vacation's URL", async ({ page }
   await expect(page.getByRole("heading", { name: "Page not found" })).toBeVisible();
 });
 
+test("detail navigation and tabs stick while the single title scrolls away", async ({ page }) => {
+  const base = await createVacation(page);
+  await page.goto("/data");
+  const categories = ["food", "flights", "hotels", "transport", "fun", "shopping", "other"];
+  const rows = Array.from(
+    { length: 35 },
+    (_, index) =>
+      `Portugal,EUR,1,Expense ${index},${categories[index % categories.length]},10,2026-01-01,`,
+  );
+  await page.locator('input[type="file"]').setInputFiles({
+    name: "expenses.csv",
+    mimeType: "text/csv",
+    buffer: Buffer.from(
+      "vacation,currency,rateToEur,name,category,amount,date,notes\n" + rows.join("\n"),
+    ),
+  });
+  await page.getByRole("button", { name: "Import", exact: true }).click();
+  await expect(page).toHaveURL(/\/vacations$/);
+  await page.goto(base);
+  await expect(page.getByText("Portugal", { exact: true })).toHaveCount(1);
+  await expect(page.locator(".detail-navbar")).toHaveCSS("border-bottom-width", "0px");
+  const assertSticky = async () => {
+    await page.evaluate(() => window.scrollTo(0, 400));
+    const positions = await page.evaluate(() => {
+      const nav = document.querySelector(".detail-navbar")!.getBoundingClientRect();
+      const tabs = document.querySelector(".detail-tabs")!.getBoundingClientRect();
+      const heading = document.querySelector("h1")!.getBoundingClientRect();
+      return {
+        navTop: nav.top,
+        tabsTop: tabs.top,
+        navBottom: nav.bottom,
+        titleBottom: heading.bottom,
+        scroll: scrollY,
+      };
+    });
+    expect(positions.scroll).toBeGreaterThan(100);
+    expect(Math.abs(positions.navTop)).toBeLessThan(1);
+    expect(Math.abs(positions.tabsTop - positions.navBottom)).toBeLessThan(1);
+    expect(positions.titleBottom).toBeLessThan(positions.navBottom);
+  };
+  await assertSticky();
+  await page.getByRole("button", { name: "Summary", exact: true }).click();
+  await expect(page.getByText("Total spent", { exact: true })).toBeVisible();
+  await assertSticky();
+  if (page.viewportSize()!.width <= 600) {
+    const action = await page
+      .getByRole("button", { name: "New expense", exact: true })
+      .boundingBox();
+    expect(action!.width).toBe(page.viewportSize()!.width - 32);
+  }
+  await page.getByRole("button", { name: "New expense", exact: true }).click();
+  await expect(page.getByLabel("Amount", { exact: true })).toBeFocused();
+});
+
 test("cached PWA serves deep routes and saves expenses offline", async ({
   page,
   context,
