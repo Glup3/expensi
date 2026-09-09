@@ -112,6 +112,37 @@ test("forms use document scrolling and keep actions reachable", async ({ page })
   await expect(page.getByRole("heading", { name: "Short viewport", exact: true })).toBeVisible();
 });
 
+test("date input stays within the expense form on narrow screens", async ({ page }) => {
+  await createVacation(page);
+  await page.getByRole("button", { name: "New expense", exact: true }).click();
+  const date = page.getByLabel("Date", { exact: true });
+  await expect(date).toBeVisible();
+  await date.fill("2026-12-31");
+  for (const width of [320, 375, 390]) {
+    await page.setViewportSize({ width, height: 664 });
+    for (const fontSize of [16, 24]) {
+      await date.evaluate((input, size) => {
+        input.style.fontSize = `${size}px`;
+      }, fontSize);
+      const bounds = await date.evaluate((input) => {
+        const control = input.getBoundingClientRect();
+        const field = input.closest("label")!.getBoundingClientRect();
+        return {
+          fits: control.left >= field.left && control.right <= field.right + 1,
+          pageFits: document.documentElement.scrollWidth <= window.innerWidth,
+          appearance: getComputedStyle(input).appearance,
+        };
+      });
+      expect(bounds).toEqual({ fits: true, pageFits: true, appearance: "none" });
+    }
+  }
+  await page.getByLabel("Amount", { exact: true }).fill("10");
+  await page.getByLabel("Name", { exact: true }).fill("Date test");
+  await page.getByRole("button", { name: "Save", exact: true }).click();
+  await page.getByRole("button", { name: /Date test/ }).click();
+  await expect(page.getByLabel("Date", { exact: true })).toHaveValue("2026-12-31");
+});
+
 test("data routes export and import CSV", async ({ page }) => {
   const base = await createVacation(page);
   await page.getByRole("button", { name: "Summary", exact: true }).click();

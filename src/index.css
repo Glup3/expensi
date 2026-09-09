@@ -103,6 +103,25 @@ select {
   padding: 11px 12px;
   min-height: 48px;
 }
+/* iOS date controls have intrinsic sizing that can exceed a narrow form.
+   Reset the native appearance, not the native picker, and constrain both the
+   outer control and WebKit's internal date display. */
+input[type="date"] {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  min-inline-size: 0;
+  max-inline-size: 100%;
+  inline-size: 100%;
+}
+input[type="date"]::-webkit-date-and-time-value {
+  min-width: 0;
+  text-align: left;
+}
+input[type="date"]::-webkit-datetime-edit {
+  min-width: 0;
+  padding: 0;
+}
 textarea {
   resize: vertical;
 }
