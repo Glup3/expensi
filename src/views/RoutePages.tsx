@@ -1,4 +1,6 @@
-import { useLoaderData, useLocation, useNavigate } from "react-router-dom";
+import { useLoaderData, useLocation, useNavigate, useParams } from "react-router-dom";
+import { useLiveQuery } from "dexie-react-hooks";
+import type { Vacation, Expense } from "../db/db.ts";
 import type { vacationLoader, expenseLoader } from "../lib/loaders.ts";
 import {
   createVacation,
@@ -63,7 +65,32 @@ export function EditVacationPage() {
 }
 
 export function ExpensePage() {
-  const { vacation, expense } = useLoaderData<typeof expenseLoader>();
+  const data = useLoaderData<typeof expenseLoader>();
+  return <ExpenseEditor {...data} />;
+}
+
+export function NewExpensePage() {
+  const { vacationId = "" } = useParams();
+  const location = useLocation();
+  const snapshot = location.state?.vacation as Vacation | undefined;
+  // Render immediately on an in-app tap; verify/refresh the snapshot from IDB
+  // without delaying the input mount and losing iOS's keyboard permission.
+  const vacation = useLiveQuery(
+    async () => (await getVacation(vacationId)) ?? null,
+    [vacationId],
+    snapshot?.id === vacationId ? snapshot : undefined,
+  );
+  if (vacation === null) throw new Response("Vacation not found", { status: 404 });
+  if (!vacation)
+    return (
+      <div className="screen">
+        <p role="status">Loading vacation…</p>
+      </div>
+    );
+  return <ExpenseEditor key={vacationId} vacation={vacation} />;
+}
+
+function ExpenseEditor({ vacation, expense }: { vacation: Vacation; expense?: Expense }) {
   const close = useReturnTo(`/vacations/${vacation.id}`);
   const toast = useToast();
   return (

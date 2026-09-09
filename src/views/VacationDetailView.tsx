@@ -211,7 +211,13 @@ export default function VacationDetailView() {
       <button
         type="button"
         className="add-button"
-        onClick={() => navigate(`${base}/expenses/new`, navigationState)}
+        onClick={() =>
+          navigate(`${base}/expenses/new`, {
+            state: { ...navigationState.state, vacation },
+            // Mount/autofocus the input within the tap event, not after a loader.
+            flushSync: true,
+          })
+        }
         aria-label="New expense"
       >
         <span aria-hidden="true">+</span> Add expense

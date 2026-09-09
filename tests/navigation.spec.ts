@@ -11,7 +11,21 @@ async function createVacation(page: Page, name = "Portugal") {
 }
 
 async function addExpense(page: Page) {
+  await page.evaluate(() => {
+    document.addEventListener(
+      "click",
+      () => {
+        document.documentElement.dataset.synchronousAmountFocus = String(
+          document.activeElement?.getAttribute("aria-label") === "Amount",
+        );
+      },
+      { once: true },
+    );
+  });
   await page.getByRole("button", { name: "New expense", exact: true }).click();
+  // A later focus is insufficient for the iOS keyboard: the input must mount
+  // and receive focus before the original tap finishes bubbling.
+  await expect(page.locator("html")).toHaveAttribute("data-synchronous-amount-focus", "true");
   await expect(page).toHaveURL(/\/expenses\/new$/);
   await expect(page.getByLabel("Amount", { exact: true })).toBeFocused();
   await expect(page.locator(".amount-input + .amount-currency")).toHaveText("EUR");

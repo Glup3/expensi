@@ -20,6 +20,7 @@ import {
   NewVacationPage,
   EditVacationPage,
   ExpensePage,
+  NewExpensePage,
 } from "./views/RoutePages.tsx";
 import { vacationLoader, expenseLoader, detailLoader } from "./lib/loaders.ts";
 import { listVacations } from "./db/repo.ts";
@@ -85,8 +86,7 @@ const router = createBrowserRouter([
           },
           {
             path: "vacations/:vacationId/expenses/new",
-            loader: expenseLoader,
-            element: <ExpensePage />,
+            element: <NewExpensePage />,
           },
           {
             path: "vacations/:vacationId/expenses/:expenseId/edit",
