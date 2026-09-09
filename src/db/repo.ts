@@ -56,11 +56,6 @@ export function deleteExpense(id: string): Promise<void> {
   return db.expenses.delete(id);
 }
 
-/** Re-inserts an expense with its original id (used by undo-delete). */
-export function restoreExpense(expense: Expense): Promise<string> {
-  return db.expenses.put(expense);
-}
-
 /* -------------------------------- summaries ------------------------------- */
 
 export interface CategoryTotal {

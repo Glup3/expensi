@@ -51,6 +51,11 @@ export default function VacationForm({ vacation, onClose, onSave, onDelete }: Va
       confirmLabel="Save"
       onConfirm={submit}
       confirmDisabled={!canSave}
+      disabledReason={
+        !name.trim()
+          ? "Enter a vacation name to save."
+          : "Enter an exchange rate greater than zero to save."
+      }
     >
       <div className="list">
         <label className="field">
@@ -58,8 +63,9 @@ export default function VacationForm({ vacation, onClose, onSave, onDelete }: Va
           <input
             className="field-input"
             value={name}
+            required
             onChange={(e) => setName(e.target.value)}
-            placeholder="Japan 2025"
+            placeholder="Summer in Japan"
             enterKeyHint="done"
             autoCapitalize="words"
           />
@@ -86,6 +92,9 @@ export default function VacationForm({ vacation, onClose, onSave, onDelete }: Va
               value={rate}
               onChange={(e) => setRate(e.target.value)}
               inputMode="decimal"
+              required
+              aria-invalid={!rateValid}
+              aria-describedby="exchange-rate-help"
               placeholder="0.0061"
             />
           </label>
@@ -93,9 +102,9 @@ export default function VacationForm({ vacation, onClose, onSave, onDelete }: Va
       </div>
 
       {!isEur && (
-        <p className="info-text">
-          1 {currency} = {rateValid ? rateValue : "?"} EUR. Entered manually and used only to show
-          EUR equivalents.
+        <p id="exchange-rate-help" className="info-text">
+          1 {currency} = {rateValid ? rateValue : "?"} EUR. The suggested rate is approximate, not
+          live. Check and adjust it before saving. It is used only to show EUR equivalents.
         </p>
       )}
     </FormPage>

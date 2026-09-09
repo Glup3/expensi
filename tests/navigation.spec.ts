@@ -49,7 +49,7 @@ async function addExpense(page: Page) {
   await expect(page.getByRole("button", { name: /Lunch/ })).toBeVisible();
 }
 
-test("page routes create, reload, edit, delete and undo", async ({ page }) => {
+test("page routes create, reload, edit and confirm deletion", async ({ page }) => {
   const base = await createVacation(page);
   await expect(page.locator("dialog")).toHaveCount(0);
   await addExpense(page);
@@ -63,10 +63,16 @@ test("page routes create, reload, edit, delete and undo", async ({ page }) => {
   await expect(page).toHaveURL(new RegExp(`${base}$`));
   await expect(page.getByRole("button", { name: /Lunch/ })).toContainText("20.00");
   await page.goto(editUrl);
+  page.once("dialog", async (dialog) => {
+    expect(dialog.message()).toContain("Delete “Lunch”?");
+    await dialog.dismiss();
+  });
+  await page.getByRole("button", { name: "Delete Expense", exact: true }).click();
+  await expect(page.getByLabel("Name", { exact: true })).toHaveValue("Lunch");
+  page.once("dialog", (dialog) => dialog.accept());
   await page.getByRole("button", { name: "Delete Expense", exact: true }).click();
   await expect(page.getByText("No expenses yet", { exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "Undo", exact: true }).click();
-  await expect(page.getByRole("button", { name: /Lunch/ })).toBeVisible();
+  await expect(page.locator(".toast-host")).toHaveCount(0);
   await page.getByRole("button", { name: "Edit", exact: true }).click();
   await page.getByLabel("Name", { exact: true }).fill("Portugal updated");
   await page.getByRole("button", { name: "Save", exact: true }).click();

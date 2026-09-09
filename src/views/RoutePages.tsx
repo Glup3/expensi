@@ -10,9 +10,7 @@ import {
   createExpense,
   updateExpense,
   deleteExpense,
-  restoreExpense,
 } from "../db/repo.ts";
-import { useToast } from "../components/toast-context.ts";
 import VacationForm from "./VacationForm.tsx";
 import ExpenseForm from "./ExpenseForm.tsx";
 import DataView from "./DataView.tsx";
@@ -22,13 +20,11 @@ export function NewVacationPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const close = useReturnTo("/vacations");
-  const toast = useToast();
   return (
     <VacationForm
       onClose={close}
       onSave={async (input) => {
         const id = await createVacation(input);
-        toast.show(`“${input.name}” created`);
         await navigate(`/vacations/${id}`, { replace: true, state: location.state });
       }}
     />
@@ -39,7 +35,6 @@ export function EditVacationPage() {
   const vacation = useLoaderData<typeof vacationLoader>();
   const close = useReturnTo(`/vacations/${vacation.id}`);
   const navigate = useNavigate();
-  const toast = useToast();
   return (
     <VacationForm
       key={vacation.id}
@@ -48,7 +43,6 @@ export function EditVacationPage() {
       onSave={async (input) => {
         if (!(await updateVacation(vacation.id, input)))
           throw new Error("Vacation no longer exists");
-        toast.show("Vacation updated");
         close();
       }}
       onDelete={async () => {
@@ -57,7 +51,6 @@ export function EditVacationPage() {
         )
           return;
         await deleteVacation(vacation.id);
-        toast.show("Vacation deleted");
         await navigate("/vacations", { replace: true });
       }}
     />
@@ -92,7 +85,6 @@ export function NewExpensePage() {
 
 function ExpenseEditor({ vacation, expense }: { vacation: Vacation; expense?: Expense }) {
   const close = useReturnTo(`/vacations/${vacation.id}`);
-  const toast = useToast();
   return (
     <ExpenseForm
       key={expense?.id ?? vacation.id}
@@ -105,27 +97,13 @@ function ExpenseEditor({ vacation, expense }: { vacation: Vacation; expense?: Ex
           if (!(await updateExpense(expense.id, draft)))
             throw new Error("Expense no longer exists");
         } else await createExpense({ ...draft, vacationId: vacation.id });
-        toast.show(expense ? "Expense updated" : "Expense added");
         close();
       }}
       onDelete={
         expense
           ? async () => {
+              if (!window.confirm(`Delete “${expense.name}”? This cannot be undone.`)) return;
               await deleteExpense(expense.id);
-              toast.show("Expense deleted", {
-                label: "Undo",
-                run: () => {
-                  void (async () => {
-                    try {
-                      if (!(await getVacation(expense.vacationId)))
-                        throw new Error("Vacation no longer exists");
-                      await restoreExpense(expense);
-                    } catch {
-                      toast.show("Could not restore expense");
-                    }
-                  })();
-                },
-              });
               close();
             }
           : undefined

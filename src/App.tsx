@@ -11,7 +11,6 @@ import {
   isRouteErrorResponse,
 } from "react-router-dom";
 import PWABadge from "./PWABadge.tsx";
-import { ToastProvider } from "./components/toast.tsx";
 import VacationsView from "./views/VacationsView.tsx";
 import VacationDetailView from "./views/VacationDetailView.tsx";
 import {
@@ -40,13 +39,13 @@ function Layout() {
     }
   }, [location.pathname]);
   return (
-    <ToastProvider>
+    <>
       <main className="app">
         <Outlet />
       </main>
       <PWABadge />
       <ScrollRestoration />
-    </ToastProvider>
+    </>
   );
 }
 

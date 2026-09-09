@@ -175,7 +175,6 @@ export function analyzeCsv(text: string): CsvPreview {
 
   const cell = (row: string[], i: number) => (i === -1 ? "" : (row[i] ?? "").trim());
   const rows: ParsedCsvRow[] = [];
-  const vacationNames: string[] = [];
 
   table.slice(1).forEach((raw, n) => {
     const line = n + 2;
@@ -188,8 +187,6 @@ export function analyzeCsv(text: string): CsvPreview {
     const currency = cell(raw, iCurrency).toUpperCase() || "EUR";
     const rateRaw = cell(raw, iRate).replace(",", ".");
     const rate = rateRaw === "" ? (currency === "EUR" ? 1 : 0) : Number(rateRaw);
-
-    if (!vacationNames.includes(vacationName)) vacationNames.push(vacationName);
 
     const amountRaw = cell(raw, iAmount);
     const name = cell(raw, iName);
@@ -235,7 +232,7 @@ export function analyzeCsv(text: string): CsvPreview {
 
   return {
     rows,
-    vacationNames,
+    vacationNames: [...new Set(rows.map((row) => row.vacationName))],
     expenseCount: rows.filter((r) => r.amountRaw !== "").length,
     errors,
   };

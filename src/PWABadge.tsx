@@ -1,8 +1,11 @@
 import "./PWABadge.css";
+import { useState } from "react";
 
 import { useRegisterSW } from "virtual:pwa-register/react";
 
 function PWABadge() {
+  const [updating, setUpdating] = useState(false);
+  const [error, setError] = useState("");
   // check for updates every hour
   const period = 60 * 60 * 1000;
 
@@ -27,24 +30,45 @@ function PWABadge() {
     setNeedRefresh(false);
   }
 
+  if (!needRefresh) return null;
+
   return (
-    <div className="PWABadge" role="alert" aria-labelledby="toast-message">
-      {needRefresh && (
-        <div className="PWABadge-toast">
-          <div className="PWABadge-message">
-            <span id="toast-message">An update is ready. Reload when you’ve finished editing.</span>
-          </div>
-          <div className="PWABadge-buttons">
-            <button className="PWABadge-toast-button" onClick={() => updateServiceWorker(true)}>
-              Reload
-            </button>
-            <button className="PWABadge-toast-button" onClick={() => close()}>
-              Close
-            </button>
-          </div>
-        </div>
+    <section className="pwa-update" aria-label="App update">
+      <p role="status">An update is ready. Reload when you’ve finished editing.</p>
+      {error && (
+        <p className="error-text" role="alert">
+          {error}
+        </p>
       )}
-    </div>
+      <div className="pwa-update-actions">
+        <button
+          type="button"
+          className="pwa-update-button"
+          disabled={updating}
+          onClick={async () => {
+            if (
+              document.querySelector(".form-page form") &&
+              !window.confirm("Reloading may discard unsaved changes. Reload now?")
+            )
+              return;
+            setUpdating(true);
+            setError("");
+            try {
+              await updateServiceWorker(true);
+            } catch {
+              setError("Could not update the app. Please try again.");
+            } finally {
+              setUpdating(false);
+            }
+          }}
+        >
+          {updating ? "Updating…" : "Reload"}
+        </button>
+        <button type="button" className="pwa-update-button" disabled={updating} onClick={close}>
+          Later
+        </button>
+      </div>
+    </section>
   );
 }
 
@@ -59,14 +83,11 @@ function registerPeriodicSync(period: number, swUrl: string, r: ServiceWorkerReg
   setInterval(async () => {
     if ("onLine" in navigator && !navigator.onLine) return;
 
-    const resp = await fetch(swUrl, {
-      cache: "no-store",
-      headers: {
-        cache: "no-store",
-        "cache-control": "no-cache",
-      },
-    });
-
-    if (resp?.status === 200) await r.update();
+    try {
+      const resp = await fetch(swUrl, { cache: "no-store" });
+      if (resp.status === 200) await r.update();
+    } catch {
+      // A background update check may fail offline; retry on the next interval.
+    }
   }, period);
 }

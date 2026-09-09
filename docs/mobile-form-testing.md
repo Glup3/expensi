@@ -25,7 +25,7 @@ npx playwright install chromium webkit
 npm run test:e2e
 ```
 
-The suite builds and serves the production PWA. It covers desktop Chromium, small-screen Chromium, and iPhone-sized WebKit: create/edit/delete/undo, back/forward, direct-link refresh, missing records, document scrolling, scroll restoration, and CSV import/export. Offline deep-link navigation and saving run in Chromium because Playwright WebKit does not expose service workers.
+The suite builds and serves the production PWA. It covers desktop Chromium, small-screen Chromium, and iPhone-sized WebKit: create/edit/confirmed deletion, inline failures, back/forward, direct-link refresh, missing records, document scrolling, scroll restoration, and CSV import/export. Offline deep-link navigation and saving run in Chromium because Playwright WebKit does not expose service workers.
 
 If Chromium downloads are unavailable but Chrome is installed:
 

@@ -1,4 +1,4 @@
-import { useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 interface FormPageProps {
   title: string;
@@ -10,6 +10,10 @@ interface FormPageProps {
   cancelLabel?: string;
   onDelete?: () => void | Promise<void>;
   deleteLabel?: string;
+  busy?: boolean;
+  pendingLabel?: string;
+  failureMessage?: string;
+  disabledReason?: string;
 }
 
 /** Ordinary document flow on every device, including the save actions. */
@@ -23,23 +27,35 @@ export default function FormPage({
   cancelLabel = "Cancel",
   onDelete,
   deleteLabel,
+  busy: externalBusy = false,
+  pendingLabel = "Saving…",
+  failureMessage = "Could not save your changes. Please try again.",
+  disabledReason,
 }: FormPageProps) {
-  const [busy, setBusy] = useState(false);
+  const [action, setAction] = useState<"save" | "delete" | null>(null);
+  const busy = externalBusy || action !== null;
   const [error, setError] = useState("");
   const running = useRef(false);
+  const errorElement = useRef<HTMLParagraphElement>(null);
 
-  async function run(action: () => void | Promise<void>) {
-    if (running.current) return;
+  useEffect(() => {
+    if (error) errorElement.current?.scrollIntoView({ block: "nearest" });
+  }, [error]);
+
+  async function run(task: () => void | Promise<void>, kind: "save" | "delete" = "save") {
+    if (running.current || externalBusy) return;
     running.current = true;
-    setBusy(true);
+    setAction(kind);
     setError("");
     try {
-      await action();
+      await task();
     } catch {
-      setError("Could not save your changes. Please try again.");
+      setError(
+        kind === "delete" ? "Could not delete this item. Please try again." : failureMessage,
+      );
     } finally {
       running.current = false;
-      setBusy(false);
+      setAction(null);
     }
   }
 
@@ -54,6 +70,7 @@ export default function FormPage({
         {title}
       </h1>
       <form
+        aria-busy={busy}
         onSubmit={(event) => {
           event.preventDefault();
           if (onConfirm && !confirmDisabled) void run(onConfirm);
@@ -63,14 +80,24 @@ export default function FormPage({
           {children}
         </fieldset>
         {error && (
-          <p className="error-text" role="alert">
+          <p ref={errorElement} className="error-text" role="alert">
             {error}
+          </p>
+        )}
+        {confirmDisabled && disabledReason && (
+          <p id="save-help" className="info-text">
+            {disabledReason}
           </p>
         )}
         <div className="form-actions">
           {confirmLabel && (
-            <button type="submit" className="btn" disabled={confirmDisabled || busy}>
-              {busy ? "Saving…" : confirmLabel}
+            <button
+              type="submit"
+              className="btn"
+              disabled={confirmDisabled || busy}
+              aria-describedby={confirmDisabled && disabledReason ? "save-help" : undefined}
+            >
+              {action === "save" ? pendingLabel : confirmLabel}
             </button>
           )}
           <button type="button" className="btn btn--secondary" onClick={onClose} disabled={busy}>
@@ -82,9 +109,9 @@ export default function FormPage({
             type="button"
             className="btn btn--destructive delete-action"
             disabled={busy}
-            onClick={() => void run(onDelete)}
+            onClick={() => void run(onDelete, "delete")}
           >
-            {deleteLabel ?? "Delete"}
+            {action === "delete" ? "Deleting…" : (deleteLabel ?? "Delete")}
           </button>
         )}
       </form>

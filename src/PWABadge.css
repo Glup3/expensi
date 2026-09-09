@@ -1,10 +1,12 @@
-.PWABadge-toast {
+.pwa-update {
   position: fixed;
   z-index: 30;
-  left: 16px;
-  right: 16px;
+  left: calc(16px + env(safe-area-inset-left, 0px));
+  right: calc(16px + env(safe-area-inset-right, 0px));
   bottom: calc(92px + env(safe-area-inset-bottom, 0px));
   max-width: 480px;
+  max-height: 70dvh;
+  overflow-y: auto;
   margin-inline: auto;
   padding: 16px;
   border: 1px solid var(--separator);
@@ -13,14 +15,15 @@
   background: var(--bg-grouped);
   box-shadow: 0 4px 24px #0003;
 }
-.PWABadge-message {
+.pwa-update p {
   margin-bottom: 12px;
 }
-.PWABadge-buttons {
+.pwa-update-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
 }
-.PWABadge-toast-button {
+.pwa-update-button {
   min-height: 48px;
   padding: 10px 16px;
   border-radius: 8px;

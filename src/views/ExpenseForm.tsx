@@ -65,6 +65,7 @@ export default function ExpenseForm({
       confirmLabel="Save"
       onConfirm={submit}
       confirmDisabled={!canSave}
+      disabledReason="Enter an amount greater than zero, a name, and a date to save."
     >
       <div className="amount-field">
         <div className="amount-input-wrap">
@@ -76,6 +77,8 @@ export default function ExpenseForm({
             inputMode="decimal"
             placeholder="0"
             aria-label="Amount"
+            aria-describedby="expense-currency"
+            required
             enterKeyHint="next"
             onKeyDown={(event) => {
               if (event.key === "Enter" && !event.nativeEvent.isComposing) {
@@ -84,7 +87,9 @@ export default function ExpenseForm({
               }
             }}
           />
-          <span className="amount-currency">{vacation.currency}</span>
+          <span id="expense-currency" className="amount-currency">
+            {vacation.currency}
+          </span>
         </div>
         <div className="amount-hint">{eurHint}</div>
       </div>
@@ -93,6 +98,7 @@ export default function ExpenseForm({
         <span className="field-label">Name</span>
         <input
           ref={nameInput}
+          required
           className="field-input"
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -128,6 +134,7 @@ export default function ExpenseForm({
           <input
             className="field-input"
             type="date"
+            required
             value={date}
             onChange={(e) => setDate(e.target.value)}
           />
