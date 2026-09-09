@@ -1,5 +1,5 @@
-import { useState } from "react";
-import Sheet from "../components/Sheet.tsx";
+import { useRef, useState } from "react";
+import FormPage from "../components/FormPage.tsx";
 import { CATEGORIES, type Category } from "../lib/categories.ts";
 import { formatEur, minorToInputString, parseAmountToMinor, toEurMinor } from "../lib/money.ts";
 import { todayIso } from "../lib/date.ts";
@@ -13,24 +13,25 @@ export interface ExpenseDraft {
   notes?: string;
 }
 
-interface ExpenseSheetProps {
+interface ExpenseFormProps {
   vacation: Vacation;
   expense?: Expense;
   onClose: () => void;
   onSave: (draft: ExpenseDraft) => void | Promise<void>;
-  onDelete?: () => void;
+  onDelete?: () => void | Promise<void>;
 }
 
-export default function ExpenseSheet({
+export default function ExpenseForm({
   vacation,
   expense,
   onClose,
   onSave,
   onDelete,
-}: ExpenseSheetProps) {
+}: ExpenseFormProps) {
   const [amount, setAmount] = useState(
     expense ? minorToInputString(expense.amountMinor, vacation.currency) : "",
   );
+  const nameInput = useRef<HTMLInputElement>(null);
   const [category, setCategory] = useState<Category>(expense?.category ?? "food");
   const [name, setName] = useState(expense?.name ?? "");
   const [date, setDate] = useState(expense?.date ?? todayIso());
@@ -56,7 +57,9 @@ export default function ExpenseSheet({
   }
 
   return (
-    <Sheet
+    <FormPage
+      onDelete={onDelete}
+      deleteLabel="Delete Expense"
       title={expense ? "Edit Expense" : "New Expense"}
       onClose={onClose}
       confirmLabel="Save"
@@ -65,19 +68,39 @@ export default function ExpenseSheet({
     >
       <div className="amount-field">
         <div className="amount-input-wrap">
-          <span className="amount-currency">{vacation.currency}</span>
           <input
             className="amount-input"
+            autoFocus={!expense}
             value={amount}
             onChange={(e) => setAmount(e.target.value.replace(/[^\d.,]/g, ""))}
             inputMode="decimal"
             placeholder="0"
             aria-label="Amount"
-            enterKeyHint="done"
+            enterKeyHint="next"
+            onKeyDown={(event) => {
+              if (event.key === "Enter" && !event.nativeEvent.isComposing) {
+                event.preventDefault();
+                nameInput.current?.focus();
+              }
+            }}
           />
+          <span className="amount-currency">{vacation.currency}</span>
         </div>
         <div className="amount-hint">{eurHint}</div>
       </div>
+
+      <label className="field">
+        <span className="field-label">Name</span>
+        <input
+          ref={nameInput}
+          className="field-input"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Ramen, taxi, museum…"
+          enterKeyHint="done"
+          autoCapitalize="sentences"
+        />
+      </label>
 
       <div className="list-header" id="expense-category-label">
         Category
@@ -101,17 +124,6 @@ export default function ExpenseSheet({
 
       <div className="list">
         <label className="field">
-          <span className="field-label">Name</span>
-          <input
-            className="field-input"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Ramen, taxi, museum…"
-            enterKeyHint="done"
-            autoCapitalize="sentences"
-          />
-        </label>
-        <label className="field">
           <span className="field-label">Date</span>
           <input
             className="field-input"
@@ -131,14 +143,6 @@ export default function ExpenseSheet({
           />
         </label>
       </div>
-
-      {onDelete && (
-        <div className="btn-stack">
-          <button type="button" className="btn btn--destructive" onClick={onDelete}>
-            Delete Expense
-          </button>
-        </div>
-      )}
-    </Sheet>
+    </FormPage>
   );
 }

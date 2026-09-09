@@ -1,22 +1,14 @@
-import { useState } from "react";
+import { useNavigate, useLoaderData } from "react-router-dom";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "../db/db.ts";
-import { createVacation, listVacations } from "../db/repo.ts";
+import { listVacations } from "../db/repo.ts";
 import { formatEur, formatMoney, toEurMinor } from "../lib/money.ts";
-import { useToast } from "../components/toast-context.ts";
-import VacationSheet from "./VacationSheet.tsx";
-import DataSheet from "./DataSheet.tsx";
 
-interface VacationsViewProps {
-  onOpen: (vacationId: string) => void;
-}
+export default function VacationsView() {
+  const navigate = useNavigate();
 
-export default function VacationsView({ onOpen }: VacationsViewProps) {
-  const toast = useToast();
-  const [showNew, setShowNew] = useState(false);
-  const [showData, setShowData] = useState(false);
-
-  const vacations = useLiveQuery(() => listVacations(), [], undefined);
+  const initialVacations = useLoaderData<typeof listVacations>();
+  const vacations = useLiveQuery(() => listVacations(), [], initialVacations);
   const totals = useLiveQuery(
     async () => {
       const rows = await db.expenses.toArray();
@@ -38,7 +30,7 @@ export default function VacationsView({ onOpen }: VacationsViewProps) {
         <button
           type="button"
           className="navbar-action navbar-action--right"
-          onClick={() => setShowData(true)}
+          onClick={() => navigate("/data", { state: { from: "/vacations" } })}
         >
           Data
         </button>
@@ -65,7 +57,9 @@ export default function VacationsView({ onOpen }: VacationsViewProps) {
                   key={vacation.id}
                   type="button"
                   className="row row--tappable"
-                  onClick={() => onOpen(vacation.id)}
+                  onClick={() =>
+                    navigate(`/vacations/${vacation.id}`, { state: { from: "/vacations" } })
+                  }
                 >
                   <span className="row-main">
                     <span className="row-title">{vacation.name}</span>
@@ -96,25 +90,11 @@ export default function VacationsView({ onOpen }: VacationsViewProps) {
       <button
         type="button"
         className="add-button"
-        onClick={() => setShowNew(true)}
+        onClick={() => navigate("/vacations/new", { state: { from: "/vacations" } })}
         aria-label="New vacation"
       >
         <span aria-hidden="true">+</span> New vacation
       </button>
-
-      {showNew && (
-        <VacationSheet
-          onClose={() => setShowNew(false)}
-          onSave={async (input) => {
-            const id = await createVacation(input);
-            setShowNew(false);
-            toast.show(`“${input.name}” created`);
-            onOpen(id);
-          }}
-        />
-      )}
-
-      {showData && <DataSheet onClose={() => setShowData(false)} />}
     </div>
   );
 }

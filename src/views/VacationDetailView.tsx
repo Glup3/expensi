@@ -1,48 +1,36 @@
-import { useState } from "react";
+import {
+  useNavigate,
+  useParams,
+  useSearchParams,
+  useLocation,
+  useLoaderData,
+} from "react-router-dom";
 import { useLiveQuery } from "dexie-react-hooks";
 import SegmentedControl from "../components/SegmentedControl.tsx";
-import { useToast } from "../components/toast-context.ts";
 import { categoryInfo } from "../lib/categories.ts";
 import { formatEur, formatMoney } from "../lib/money.ts";
 import { formatDateHeading } from "../lib/date.ts";
-import {
-  createExpense,
-  deleteExpense,
-  deleteVacation,
-  getVacation,
-  groupByDate,
-  listExpenses,
-  restoreExpense,
-  summarize,
-  updateExpense,
-  updateVacation,
-} from "../db/repo.ts";
-import type { Expense } from "../db/db.ts";
-import ExpenseSheet from "./ExpenseSheet.tsx";
-import VacationSheet from "./VacationSheet.tsx";
-import DataSheet from "./DataSheet.tsx";
+import { getVacation, groupByDate, listExpenses, summarize } from "../db/repo.ts";
+import type { detailLoader } from "../lib/loaders.ts";
+import { useReturnTo } from "../lib/useReturnTo.ts";
 
-type Tab = "expenses" | "summary";
-
-interface VacationDetailViewProps {
-  vacationId: string;
-  onBack: () => void;
-}
-
-export default function VacationDetailView({ vacationId, onBack }: VacationDetailViewProps) {
-  const toast = useToast();
-  const [tab, setTab] = useState<Tab>("expenses");
-  const [showNew, setShowNew] = useState(false);
-  const [editing, setEditing] = useState<Expense | null>(null);
-  const [showVacationEdit, setShowVacationEdit] = useState(false);
-  const [showData, setShowData] = useState(false);
+export default function VacationDetailView() {
+  const initial = useLoaderData<typeof detailLoader>();
+  const location = useLocation();
+  const navigationState = { state: { from: location.pathname + location.search } };
+  const { vacationId = "" } = useParams();
+  const navigate = useNavigate();
+  const [search, setSearch] = useSearchParams();
+  const tab = search.get("tab") === "summary" ? "summary" : "expenses";
+  const base = `/vacations/${vacationId}`;
+  const onBack = useReturnTo("/vacations");
 
   const vacation = useLiveQuery(
     async () => (await getVacation(vacationId)) ?? null,
     [vacationId],
-    undefined,
+    initial.vacation,
   );
-  const expenses = useLiveQuery(() => listExpenses(vacationId), [vacationId], undefined);
+  const expenses = useLiveQuery(() => listExpenses(vacationId), [vacationId], initial.expenses);
 
   if (!vacation) {
     return (
@@ -62,14 +50,6 @@ export default function VacationDetailView({ vacationId, onBack }: VacationDetai
   const summary = summarize(expenses ?? [], vacation);
   const groups = groupByDate(expenses ?? []);
 
-  async function removeExpense(expense: Expense) {
-    await deleteExpense(expense.id);
-    toast.show("Expense deleted", {
-      label: "Undo",
-      run: () => void restoreExpense(expense),
-    });
-  }
-
   return (
     <div className="screen">
       <div className="navbar">
@@ -80,7 +60,7 @@ export default function VacationDetailView({ vacationId, onBack }: VacationDetai
         <button
           type="button"
           className="navbar-action navbar-action--right"
-          onClick={() => setShowVacationEdit(true)}
+          onClick={() => navigate(`${base}/edit`, navigationState)}
         >
           Edit
         </button>
@@ -93,7 +73,13 @@ export default function VacationDetailView({ vacationId, onBack }: VacationDetai
       <div className="screen-body">
         <SegmentedControl
           value={tab}
-          onChange={setTab}
+          onChange={(value) =>
+            setSearch(value === "summary" ? { tab: value } : {}, {
+              replace: true,
+              preventScrollReset: true,
+              state: location.state,
+            })
+          }
           options={[
             { value: "expenses", label: "Expenses" },
             { value: "summary", label: "Summary" },
@@ -121,7 +107,9 @@ export default function VacationDetailView({ vacationId, onBack }: VacationDetai
                         key={expense.id}
                         type="button"
                         className="row row--tappable"
-                        onClick={() => setEditing(expense)}
+                        onClick={() =>
+                          navigate(`${base}/expenses/${expense.id}/edit`, navigationState)
+                        }
                       >
                         <span className="row-glyph" style={{ background: info.tint }}>
                           {info.glyph}
@@ -211,7 +199,7 @@ export default function VacationDetailView({ vacationId, onBack }: VacationDetai
               <button
                 type="button"
                 className="btn btn--secondary"
-                onClick={() => setShowData(true)}
+                onClick={() => navigate(`${base}/data`, navigationState)}
               >
                 Export / Import CSV
               </button>
@@ -223,66 +211,11 @@ export default function VacationDetailView({ vacationId, onBack }: VacationDetai
       <button
         type="button"
         className="add-button"
-        onClick={() => setShowNew(true)}
+        onClick={() => navigate(`${base}/expenses/new`, navigationState)}
         aria-label="New expense"
       >
         <span aria-hidden="true">+</span> Add expense
       </button>
-
-      {showNew && (
-        <ExpenseSheet
-          vacation={vacation}
-          onClose={() => setShowNew(false)}
-          onSave={async (draft) => {
-            await createExpense({ ...draft, vacationId });
-            setShowNew(false);
-            setTab("expenses");
-            toast.show("Expense added");
-          }}
-        />
-      )}
-
-      {editing && (
-        <ExpenseSheet
-          vacation={vacation}
-          expense={editing}
-          onClose={() => setEditing(null)}
-          onSave={async (draft) => {
-            await updateExpense(editing.id, draft);
-            setEditing(null);
-          }}
-          onDelete={async () => {
-            const expense = editing;
-            setEditing(null);
-            await removeExpense(expense);
-          }}
-        />
-      )}
-
-      {showVacationEdit && (
-        <VacationSheet
-          vacation={vacation}
-          onClose={() => setShowVacationEdit(false)}
-          onSave={async (input) => {
-            await updateVacation(vacation.id, input);
-            setShowVacationEdit(false);
-          }}
-          onDelete={async () => {
-            if (
-              !window.confirm(
-                `Delete “${vacation.name}” and all its expenses? This cannot be undone.`,
-              )
-            )
-              return;
-            await deleteVacation(vacation.id);
-            setShowVacationEdit(false);
-            onBack();
-            toast.show(`“${vacation.name}” deleted`);
-          }}
-        />
-      )}
-
-      {showData && <DataSheet vacation={vacation} onClose={() => setShowData(false)} />}
     </div>
   );
 }

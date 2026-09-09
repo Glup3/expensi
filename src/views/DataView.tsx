@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import Sheet from "../components/Sheet.tsx";
+import FormPage from "../components/FormPage.tsx";
 import { useToast } from "../components/toast-context.ts";
 import {
   applyImport,
@@ -12,13 +12,13 @@ import {
 import type { CsvPreview } from "../lib/csv.ts";
 import type { Vacation } from "../db/db.ts";
 
-interface DataSheetProps {
+interface DataViewProps {
   onClose: () => void;
   /** When set, offers a single-vacation export in addition to the full backup. */
   vacation?: Vacation;
 }
 
-export default function DataSheet({ onClose, vacation }: DataSheetProps) {
+export default function DataView({ onClose, vacation }: DataViewProps) {
   const toast = useToast();
   const fileInput = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<CsvPreview | null>(null);
@@ -65,7 +65,7 @@ export default function DataSheet({ onClose, vacation }: DataSheetProps) {
   if (preview) {
     const importable = preview.expenseCount > 0 || preview.vacationNames.length > 0;
     return (
-      <Sheet
+      <FormPage
         title="Confirm Import"
         onClose={() => setPreview(null)}
         cancelLabel="Back"
@@ -102,12 +102,12 @@ export default function DataSheet({ onClose, vacation }: DataSheetProps) {
             </div>
           </>
         )}
-      </Sheet>
+      </FormPage>
     );
   }
 
   return (
-    <Sheet title="Data" onClose={onClose} cancelLabel="Done">
+    <FormPage title="Data" onClose={onClose} cancelLabel="Back">
       <div className="list-header">Export</div>
       <div className="list">
         {vacation && (
@@ -149,6 +149,6 @@ export default function DataSheet({ onClose, vacation }: DataSheetProps) {
           e.target.value = "";
         }}
       />
-    </Sheet>
+    </FormPage>
   );
 }

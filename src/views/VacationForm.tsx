@@ -1,16 +1,16 @@
 import { useState } from "react";
-import Sheet from "../components/Sheet.tsx";
+import FormPage from "../components/FormPage.tsx";
 import { CURRENCIES, currencyOption } from "../lib/currencies.ts";
 import type { Vacation } from "../db/db.ts";
 
-interface VacationSheetProps {
+interface VacationFormProps {
   vacation?: Vacation;
   onClose: () => void;
   onSave: (input: { name: string; currency: string; rateToEur: number }) => void | Promise<void>;
-  onDelete?: () => void;
+  onDelete?: () => void | Promise<void>;
 }
 
-export default function VacationSheet({ vacation, onClose, onSave, onDelete }: VacationSheetProps) {
+export default function VacationForm({ vacation, onClose, onSave, onDelete }: VacationFormProps) {
   const [name, setName] = useState(vacation?.name ?? "");
   const [currency, setCurrency] = useState(vacation?.currency ?? "EUR");
   const [rate, setRate] = useState(
@@ -43,7 +43,9 @@ export default function VacationSheet({ vacation, onClose, onSave, onDelete }: V
   }
 
   return (
-    <Sheet
+    <FormPage
+      onDelete={onDelete}
+      deleteLabel="Delete Vacation"
       title={vacation ? "Edit Vacation" : "New Vacation"}
       onClose={onClose}
       confirmLabel="Save"
@@ -96,14 +98,6 @@ export default function VacationSheet({ vacation, onClose, onSave, onDelete }: V
           EUR equivalents.
         </p>
       )}
-
-      {onDelete && (
-        <div className="btn-stack">
-          <button type="button" className="btn btn--destructive" onClick={onDelete}>
-            Delete Vacation
-          </button>
-        </div>
-      )}
-    </Sheet>
+    </FormPage>
   );
 }
