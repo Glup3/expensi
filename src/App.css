@@ -227,7 +227,37 @@
   border-radius: 3px;
 }
 
-/* Native dialog uses the top layer; no fragile overlay z-index hierarchy. */
+/* Desktop dialogs use the top layer. Mobile forms use normal document flow. */
+.sheet-page {
+  min-height: 100svh;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);
+  background: var(--bg-grouped);
+}
+.sheet-page .sheet-form {
+  display: block;
+  max-height: none;
+}
+.sheet-page .sheet-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px;
+}
+.sheet-page .sheet-nav h2 {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.sheet-page .sheet-body {
+  padding: 20px 16px;
+  overflow: visible;
+}
+.sheet-page .sheet-footer {
+  padding: 16px 16px 24px;
+}
+
 .sheet {
   width: min(560px, calc(100% - 32px));
   max-height: calc(100dvh - 48px - var(--safe-top) - var(--safe-bottom));
@@ -455,29 +485,5 @@
   .row {
     padding: 14px 12px;
     gap: 10px;
-  }
-  .sheet {
-    width: 100%;
-    top: var(--dialog-top, 0px);
-    height: var(--dialog-height, 100dvh);
-    max-height: var(--dialog-height, 100dvh);
-    max-width: 100%;
-    margin: 0;
-    border: 0;
-    border-radius: 0;
-    padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);
-  }
-  .sheet-form {
-    height: 100%;
-  }
-  .sheet-nav {
-    padding: 18px 16px;
-  }
-  .sheet-body {
-    padding: 20px 16px;
-    flex: 1;
-  }
-  .sheet-footer {
-    padding: 12px 16px;
   }
 }
