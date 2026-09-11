@@ -63,6 +63,11 @@
   color: var(--label-secondary);
   margin: 20px 0 10px;
 }
+.list-header--split {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
 .row {
   display: flex;
   align-items: center;

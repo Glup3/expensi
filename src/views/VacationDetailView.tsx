@@ -99,7 +99,15 @@ export default function VacationDetailView() {
           ) : (
             groups.map((group) => (
               <div key={group.date}>
-                <div className="list-header">{formatDateHeading(group.date)}</div>
+                <div className="list-header list-header--split">
+                  <span>{formatDateHeading(group.date)}</span>
+                  <span>
+                    {formatMoney(
+                      group.items.reduce((total, expense) => total + expense.amountMinor, 0),
+                      vacation.currency,
+                    )}
+                  </span>
+                </div>
                 <div className="list">
                   {group.items.map((expense) => {
                     const info = categoryInfo(expense.category);
