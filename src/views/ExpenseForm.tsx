@@ -63,6 +63,7 @@ export default function ExpenseForm({
       title={expense ? "Edit Expense" : "New Expense"}
       onClose={onClose}
       confirmLabel="Save"
+      confirmInHeader
       onConfirm={submit}
       confirmDisabled={!canSave}
       disabledReason="Enter an amount greater than zero, a name, and a date to save."

@@ -3,12 +3,12 @@ import {
   createBrowserRouter,
   RouterProvider,
   Outlet,
-  Navigate,
   Link,
   ScrollRestoration,
   useLocation,
   useRouteError,
   isRouteErrorResponse,
+  redirect,
 } from "react-router-dom";
 import PWABadge from "./PWABadge.tsx";
 import VacationsView from "./views/VacationsView.tsx";
@@ -22,7 +22,8 @@ import {
   NewExpensePage,
 } from "./views/RoutePages.tsx";
 import { vacationLoader, expenseLoader, detailLoader } from "./lib/loaders.ts";
-import { listVacations } from "./db/repo.ts";
+import { getVacation, listVacations } from "./db/repo.ts";
+import { getLastVacationId } from "./lib/lastVacation.ts";
 import "./App.css";
 
 function Layout() {
@@ -67,6 +68,14 @@ function RouteError() {
   );
 }
 
+async function landingLoader() {
+  const vacationId = getLastVacationId();
+  if (vacationId && (await getVacation(vacationId))) {
+    return redirect(`/vacations/${vacationId}`);
+  }
+  return redirect("/vacations");
+}
+
 const router = createBrowserRouter([
   {
     element: <Layout />,
@@ -74,7 +83,7 @@ const router = createBrowserRouter([
       {
         errorElement: <RouteError />,
         children: [
-          { index: true, element: <Navigate to="/vacations" replace /> },
+          { index: true, loader: landingLoader },
           { path: "vacations", loader: listVacations, element: <VacationsView /> },
           { path: "vacations/new", element: <NewVacationPage /> },
           { path: "vacations/:vacationId", loader: detailLoader, element: <VacationDetailView /> },

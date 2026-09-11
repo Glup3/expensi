@@ -25,7 +25,13 @@ export default function VacationsView() {
   return (
     <div className="screen">
       <div className="navbar">
-        <div className="navbar-action" />
+        <button
+          type="button"
+          className="navbar-action"
+          onClick={() => navigate("/vacations/new", { state: { from: "/vacations" } })}
+        >
+          New vacation
+        </button>
         <div className="navbar-title">Expense tracker</div>
         <button
           type="button"
@@ -86,15 +92,6 @@ export default function VacationsView() {
           </div>
         )}
       </div>
-
-      <button
-        type="button"
-        className="add-button"
-        onClick={() => navigate("/vacations/new", { state: { from: "/vacations" } })}
-        aria-label="New vacation"
-      >
-        <span aria-hidden="true">+</span> New vacation
-      </button>
     </div>
   );
 }

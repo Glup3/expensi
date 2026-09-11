@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import {
   useNavigate,
   useParams,
@@ -13,6 +14,7 @@ import { formatDateHeading } from "../lib/date.ts";
 import { getVacation, groupByDate, listExpenses, summarize } from "../db/repo.ts";
 import type { detailLoader } from "../lib/loaders.ts";
 import { useReturnTo } from "../lib/useReturnTo.ts";
+import { setLastVacationId } from "../lib/lastVacation.ts";
 
 export default function VacationDetailView() {
   const initial = useLoaderData<typeof detailLoader>();
@@ -31,6 +33,10 @@ export default function VacationDetailView() {
     initial.vacation,
   );
   const expenses = useLiveQuery(() => listExpenses(vacationId), [vacationId], initial.expenses);
+
+  useEffect(() => {
+    if (vacation) setLastVacationId(vacation.id);
+  }, [vacation]);
 
   if (!vacation) {
     return (

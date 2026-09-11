@@ -41,6 +41,9 @@
   font-weight: 600;
   flex-shrink: 0;
 }
+.navbar-action--right {
+  margin-left: auto;
+}
 .large-title {
   font-size: clamp(26px, 5vw, 34px);
   line-height: 1.2;

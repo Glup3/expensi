@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 
 interface FormPageProps {
   title: string;
@@ -7,6 +7,7 @@ interface FormPageProps {
   confirmLabel?: string;
   onConfirm?: () => void | Promise<void>;
   confirmDisabled?: boolean;
+  confirmInHeader?: boolean;
   cancelLabel?: string;
   onDelete?: () => void | Promise<void>;
   deleteLabel?: string;
@@ -24,6 +25,7 @@ export default function FormPage({
   confirmLabel,
   onConfirm,
   confirmDisabled,
+  confirmInHeader = false,
   cancelLabel = "Cancel",
   onDelete,
   deleteLabel,
@@ -33,6 +35,7 @@ export default function FormPage({
   disabledReason,
 }: FormPageProps) {
   const [action, setAction] = useState<"save" | "delete" | null>(null);
+  const formId = useId();
   const busy = externalBusy || action !== null;
   const [error, setError] = useState("");
   const running = useRef(false);
@@ -65,11 +68,23 @@ export default function FormPage({
         <button type="button" className="navbar-action" onClick={onClose} disabled={busy}>
           ← {cancelLabel}
         </button>
+        {confirmInHeader && confirmLabel && (
+          <button
+            type="submit"
+            form={formId}
+            className="navbar-action navbar-action--right"
+            disabled={confirmDisabled || busy}
+            aria-describedby={confirmDisabled && disabledReason ? "save-help" : undefined}
+          >
+            {action === "save" ? pendingLabel : confirmLabel}
+          </button>
+        )}
       </header>
       <h1 className="large-title" tabIndex={-1}>
         {title}
       </h1>
       <form
+        id={formId}
         aria-busy={busy}
         onSubmit={(event) => {
           event.preventDefault();
@@ -90,7 +105,7 @@ export default function FormPage({
           </p>
         )}
         <div className="form-actions">
-          {confirmLabel && (
+          {confirmLabel && !confirmInHeader && (
             <button
               type="submit"
               className="btn"
