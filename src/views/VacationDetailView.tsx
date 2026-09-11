@@ -216,6 +216,43 @@ export default function VacationDetailView() {
                               }}
                             />
                           </div>
+                          <div
+                            className="summary-entries"
+                            role="list"
+                            aria-label={`${info.label} expenses`}
+                          >
+                            {groups.flatMap((group) =>
+                              group.items
+                                .filter((expense) => expense.category === entry.category)
+                                .map((expense) => (
+                                  <div key={expense.id} role="listitem">
+                                    <button
+                                      type="button"
+                                      className="summary-entry"
+                                      onClick={() =>
+                                        navigate(
+                                          `${base}/expenses/${expense.id}/edit`,
+                                          navigationState,
+                                        )
+                                      }
+                                    >
+                                      <span className="summary-entry-main">
+                                        <span className="summary-entry-name">{expense.name}</span>
+                                        <span className="summary-entry-date">
+                                          {formatDateHeading(expense.date)}
+                                        </span>
+                                      </span>
+                                      <span className="summary-entry-amount">
+                                        {formatMoney(expense.amountMinor, vacation.currency)}
+                                      </span>
+                                      <span className="chevron" aria-hidden="true">
+                                        ›
+                                      </span>
+                                    </button>
+                                  </div>
+                                )),
+                            )}
+                          </div>
                         </div>
                       </div>
                     );
