@@ -323,6 +323,16 @@
   margin: 0 auto;
   padding: 0 16px 110px;
 }
+.form-page > .navbar {
+  position: sticky;
+  top: 0;
+  z-index: 12;
+  margin-top: calc(-1 * var(--safe-top));
+  margin-inline: -16px;
+  padding: var(--safe-top) 16px 0;
+  border-bottom: 0;
+  background: var(--bg);
+}
 .form-fields {
   min-width: 0;
   margin: 0;

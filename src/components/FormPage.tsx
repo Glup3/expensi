@@ -17,7 +17,7 @@ interface FormPageProps {
   disabledReason?: string;
 }
 
-/** Ordinary document flow on every device, including the save actions. */
+/** Document-scrolling form with sticky navigation on every device. */
 export default function FormPage({
   title,
   onClose,
